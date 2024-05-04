@@ -364,7 +364,7 @@ class App(ck.CTk):
         self.save_img = ck.CTkImage(light_image=save_img_data, dark_image=save_img_data, size=(43, 43))
         self.Save = ck.CTkButton(master=self.sidebar_frame, 
                                 image=self.save_img, 
-                                text="Save File", 
+                                text="Read File", 
                                 fg_color="#725373", 
                                 font=("Arial Bold", 14), 
                                 text_color="#efe5ef", 
@@ -409,7 +409,11 @@ class App(ck.CTk):
         expense_name = self.DescriptionEntry.get()
         category = self.Category.get()
         cost = self.CostEntry.get()
-        # Generate current time
+
+        if not expense_name or not cost or category == "Select Category":
+            tk.messagebox.showinfo("Error", "Please fill in all fields!")
+            return
+
         time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # Insert into database
         db.insert_groceries(expense_name, category, cost, time)
@@ -467,6 +471,9 @@ class App(ck.CTk):
         self.Expenses.update_idletasks()
 
     def update_balance(self):
+        if self.input_balance is None:
+            print("Input balance is not set.")
+            return
         expenses = db.sum_all()
         self.balance = float(self.input_balance) - expenses
         print("Balance:", self.balance)
@@ -478,6 +485,10 @@ class App(ck.CTk):
         # Prompt the user for the name of the Excel file
         dialog = ck.CTkInputDialog(text="Type in the name of the Excel file:", title="Save Excel File")
         filename = dialog.get_input() 
+
+        # If the user clicked close or cancel, don't save the file
+        if filename is None:
+            return
 
         # Get data from the database
         data = db.select_all()
